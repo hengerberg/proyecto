@@ -25,14 +25,14 @@ def ordenes(request, usuario):
     """
     data = {}
     try:
-        action = request.POST['action']
-        if action == 'searchdata':
-            data = []
-            for i in Inventory.objects.filter(user_id=usuario)[:60]:
-                # data.append(i.toJSON())
-                data.insert(0, i.toJSON())
-        else:
-            data['error'] = 'Ha ocurrido un error'
+        #action = request.POST['action']
+        #if action == 'searchdata':
+        data = []
+        for i in Inventory.objects.filter(user_id=usuario)[:60]:
+            # data.append(i.toJSON())
+            data.insert(0, i.toJSON())
+        #else:
+        #    data['error'] = 'Ha ocurrido un error'
     except Exception as e:
         data['error'] = str(e)
     

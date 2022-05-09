@@ -8,7 +8,7 @@ $(function () {
         destroy: true,
         deferRender: true,
         info: false,
-        orderFixed: [ 1, 'dec' ],
+        //orderFixed: [ 1, 'dec' ],
         language: {
             "decimal": "",
             "emptyTable": "No hay información",

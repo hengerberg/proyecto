@@ -101,6 +101,91 @@ class SellerUpdateView(IsSupervisorMixin, UpdateView):
         return context
 
 
+class SellerInfoInventoryListView(IsSupervisorMixin, ListView):
+    
+    model = Inventory
+    template_name = 'supervisor/vendedor/informacion_vendedor.html'
+    success_url = reverse_lazy('supervisor:lista_vendedores')
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        
+        query = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
+        return query
+
+    def post(self, request, *args, **kwargs):
+        """
+        por crear mensaje de error cuando el supervisor no tiene suficientes chip para agregar y 
+        para retirar mas chips de los que tiene el vendedor
+        """
+        try:
+            action = request.POST['action']
+            if action == 'add':
+                venta,portabilidad =request.POST.get('venta'),request.POST.get('portabilidad')
+       
+                if venta == '' and portabilidad == '':
+                    return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+
+                if venta == '': chip_venta = 0
+                else: chip_venta = int(venta)
+                
+                if portabilidad == '': chip_portabilidad = 0
+                else: chip_portabilidad = int(portabilidad)
+
+                with transaction.atomic():
+                    inv = InventoryCurrent.objects.get(user_id=request.user.id)
+                    if inv.chips_sale >= chip_venta and inv.chips_portability >= chip_portabilidad:
+                        #actualizo el inventario del vendedor
+                        update_inventory(chip_venta, chip_portabilidad, self.kwargs['pk'], True)
+                        # actualiza los datos del supervisor
+                        update_inventory(-chip_venta, -chip_portabilidad, request.user.id, False)
+
+                        return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+                   
+                return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+            elif action == 'del':
+                venta,portabilidad = request.POST.get('venta'),request.POST.get('portabilidad')
+       
+                if venta == '' and portabilidad == '':
+                    return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+
+                if venta == '': chip_venta = 0
+                else: chip_venta = int(venta)
+                
+                if portabilidad == '': chip_portabilidad = 0
+                else: chip_portabilidad = int(portabilidad)
+                
+                with transaction.atomic():
+                    inv_ven = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
+                    if inv_ven.chips_sale >= chip_venta and inv_ven.chips_portability >= chip_portabilidad:
+                        #actualizo el inventario del vendedor
+                        update_inventory(chip_venta* -1, chip_portabilidad* -1, self.kwargs['pk'], False)
+                        #actualizo los datos del supervisor
+                        update_inventory(chip_venta, chip_portabilidad, request.user.id, True)
+                        return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+                    
+           
+                return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+            
+            if action == 'searchdata':
+                data = ordenes(request,self.kwargs['pk'])
+            else:
+                print('ha ocurrido un error')
+        except Exception as e:
+            print(e)
+
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Agregar Inventario'
+        context['entity'] = 'Agregar Inventario'
+        return context
+
+
 class InventoryUpdateView(IsSupervisorMixin, ListView):
     model = Inventory
     template_name = 'supervisor/agregar_inventario.html'
@@ -147,153 +232,24 @@ class InventoryUpdateView(IsSupervisorMixin, ListView):
                 for v in GrupSupervisor.objects.filter(supervisor_id=request.user.id):
                     # vamos agregando los reportes de cada vendedor en data[]
                     for i in Inventory.objects.filter(user_id=v.vendedor_id):
-                        data.insert(0,i.toJSON())
+                        data.append(i.toJSON())
+                        #data.insert(0,i.toJSON())
+                data.sort(key=lambda x: x['id'], reverse=True)
+                print(data)
             else:
                 print('ha ocurrido un error')
         except Exception as e:
             print(e)
 
         return JsonResponse(data, safe=False)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Agregar Inventario'
-        context['entity'] = 'Agregar Inventario'
-        return context
-
-class InfoSellerListView(IsSupervisorMixin, ListView):
-    model = Inventory
-    template_name = 'supervisor/vendedor/informacion_vendedor.html'
-    success_url = reverse_lazy('supervisor:lista_vendedores')
-
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_queryset(self):
-        
-        query = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
-        return query
-
-    def post(self, request, *args, **kwargs):
-        
-        try:
-            action = request.POST['action']
-            if action == 'add':
-                action,venta,portabilidad = request.POST.get('action'),request.POST.get('venta'),request.POST.get('portabilidad')
-       
-                if venta == '' and portabilidad == '':
-                    return redirect(self.success_url)
-
-                if venta == '': chip_venta = 0
-                else: chip_venta = int(venta)
-                
-                if portabilidad == '': chip_portabilidad = 0
-                else: chip_portabilidad = int(portabilidad)
-
-                with transaction.atomic():
-                    inv = InventoryCurrent.objects.get(user_id=request.user.id)
-                    if inv.chips_sale >= chip_venta and inv.chips_portability >= chip_portabilidad:
-                        #actualizo el inventario del vendedor
-                        update_inventory(chip_venta, chip_portabilidad, self.kwargs['pk'], True)
-                        # actualiza los datos del supervisor
-                        update_inventory(-chip_venta, -chip_portabilidad, request.user.id, False)
-
-                        return redirect(self.success_url)
-                    self.context['error'] = 'No puedes asignar mas chips de los que tienes'
-            elif action == 'del':
-                action,venta,portabilidad = request.POST.get('action'),request.POST.get('venta'),request.POST.get('portabilidad')
-       
-                if venta == '' and portabilidad == '':
-                    return redirect(self.success_url)
-
-                if venta == '': chip_venta = 0
-                else: chip_venta = int(venta)
-                
-                if portabilidad == '': chip_portabilidad = 0
-                else: chip_portabilidad = int(portabilidad)
-                
-                with transaction.atomic():
-                    inv_ven = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
-                    if inv_ven.chips_sale >= chip_venta and inv_ven.chips_portability >= chip_portabilidad:
-                        #actualizo el inventario del vendedor
-                        update_inventory(chip_venta* -1, chip_portabilidad* -1, self.kwargs['pk'], False)
-                        #actualizo los datos del supervisor
-                        update_inventory(chip_venta, chip_portabilidad, request.user.id, True)
-                        return redirect(self.success_url)
-                    self.context['error'] = 'No puedes remover mas chips de los que tiene'
-        
-            elif action == 'searchdata':
-                data = ordenes(request,self.kwargs['pk'])
-            else:
-                print('ha ocurrido un error')
-        except Exception as e:
-            print(e)
-
-        return JsonResponse(data, safe=False)
-
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
         context['title'] = 'Editar Vendedor'
         context['entity'] = 'Editar Vendedor'
-        
         return context
     
-
-
-def infoVendedor(request, username):
-
-    vendedor = User.objects.get(username=username)
-    inv_ven = InventoryCurrent.objects.get(user_id=vendedor.id)
-    context = {'v': vendedor, 'inventario': inv_ven}
-    context['title'] = 'Informacion del Vendedor'
-    # crear una funcion que permita agregar chip a un modelo y actualizar el actual
-    if request.method == 'POST':
-       
-        action,venta,portabilidad = request.POST.get('action'),request.POST.get('venta'),request.POST.get('portabilidad')
-       
-        if venta == '' and portabilidad == '':
-            return redirect('supervisor:informacion_vendedor', username=username)
-
-        if venta == '': chip_venta = 0
-        else: chip_venta = int(venta)
-        
-        if portabilidad == '': chip_portabilidad = 0
-        else: chip_portabilidad = int(portabilidad)
-
-        action = request.POST['action']
-
-        if action == 'add':
-            with transaction.atomic():
-                inv = InventoryCurrent.objects.get(user_id=request.user.id)
-                if inv.chips_sale >= chip_venta and inv.chips_portability >= chip_portabilidad:
-                    #actualizo el inventario del vendedor
-                    update_inventory(chip_venta, chip_portabilidad, vendedor.id, True)
-                    # actualiza los datos del supervisor
-                    update_inventory(-chip_venta, -chip_portabilidad, request.user.id, False)
-
-                    return redirect('supervisor:informacion_vendedor', username=username)
-                context['error'] = 'No puedes asignar mas chips de los que tienes'
-        elif action == 'del':
-            with transaction.atomic():
-
-                if inv_ven.chips_sale >= chip_venta and inv_ven.chips_portability >= chip_portabilidad:
-                    #actualizo el inventario del vendedor
-                    update_inventory(chip_venta* -1, chip_portabilidad* -1, vendedor.id, False)
-                    #actualizo los datos del supervisor
-                    update_inventory(chip_venta, chip_portabilidad, request.user.id, True)
-                    return redirect('supervisor:informacion_vendedor', username=username)
-                context['error'] = 'No puedes remover mas chips de los que tiene'
-        
-        elif action == 'searchdata':
-            data = ordenes(request, request.user.id)
-        else:
-            context['error'] = 'ha ocurrido un error'
-    return render(request, 'supervisor/vendedor/informacion_vendedor.html', context)
-
 
 class LiquidationsListView(IsSupervisorMixin, ListView):
     model = GrupSupervisor
@@ -351,3 +307,4 @@ class LiquidationsListView(IsSupervisorMixin, ListView):
         context['title'] = 'Liquidaciones'
         context['entity'] = 'Liquidaciones'
         return context
+

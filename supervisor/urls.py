@@ -11,7 +11,7 @@ urlpatterns = [
     path('vendedor/add', SellerCreateView.as_view(), name='crear_vendedor'),
     path('vendedor/list', SellerListView.as_view(), name='lista_vendedores'),
     path('vendedor/edit/<int:pk>', SellerUpdateView.as_view(), name='editar_vendedor'),
-    path('vendedor/<int:pk>', InfoSellerListView.as_view(), name='informacion_vendedor'),
+    path('vendedor/<int:pk>', SellerInfoInventoryListView.as_view(), name='informacion_vendedor'),
     
     
 
