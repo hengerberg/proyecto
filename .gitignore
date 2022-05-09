@@ -5,3 +5,4 @@ supervisor/migrations
 usuario/migrations
 vendedor/migrations
 requirements.txt
+app-gestion.sqlite3
