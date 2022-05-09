@@ -1,0 +1,10 @@
+{% if perms.inventory.add_inventory%}
+<li class="nav-item">
+    <a href="{% url 'lider:crear_supervisor' %}" class="nav-link">
+        <i class="nav-icon far fa-image"></i>
+        <p>
+            Nuevo Supervisor
+        </p>
+    </a>
+</li>
+{% endif %}

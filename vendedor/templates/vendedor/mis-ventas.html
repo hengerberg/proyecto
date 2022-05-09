@@ -1,0 +1,42 @@
+{% extends 'home/base.html' %}
+
+
+{% block contenedor %}
+<section class="content">
+    <div class="container-fluid">
+        
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-2">Ventas de {{month|date:"F Y"}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Activaciones</th>
+                                    <th scope="col">Cantidad</th>
+                                    <th scope="col">$</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for key, value in products.items %}
+                                <tr>
+                                    {% if value.quantity__sum != 0 %}
+                                        <td>{{key|title}}</td>
+                                        <td>{{value.quantity__sum}}</td>
+                                        <td>${{value.total}}</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+</section>
+{% endblock contenedor %}

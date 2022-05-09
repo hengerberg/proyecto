@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  
+  {% include 'home/header.html' %}
+  
+  {% block head %}
+  {% endblock %}
+</head>
+
+
+<body class="hold-transition sidebar-mini layout-fixed">
+  <div class="wrapper">
+    {% include 'home/navbar.html' %}
+    {% include 'home/sidebar.html' %}
+    
+    {% block sidebar %}
+      
+    {% endblock %}
+      
+    <div class="content-wrapper">
+      <!-- messages -->
+      {% if messages %}
+      <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <h5><i class="icon fas fa-ban"></i> Alerta!</h5>
+
+        <ul class="messages">
+          {% for message in messages %}
+          <li{% if message %} class="{{ message }}" {% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <!-- endmessages -->
+
+      <!-- Content Header (Page header) -->
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1>{{title}}</h1>
+            </div>
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="{% url 'inicio' %}">Inicio</a></li>
+                <li class="breadcrumb-item active">{{entity}}</li>
+              </ol>
+            </div>
+          </div>
+        </div><!-- /.container-fluid -->
+      </section>
+
+
+
+      {% block contenedor %}
+      {% endblock %}
+    </div>
+
+    {% include 'home/footer.html' %}
+  </div>
+  </div>
+  {% block script %}
+  {% endblock %}
+</body>
+
+</html>

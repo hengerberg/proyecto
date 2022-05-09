@@ -1,0 +1,146 @@
+{% extends "home/base.html" %}
+{% load static %}
+{% block contenedor %}
+<!-- Main content -->
+<section class="content">
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-3">
+
+        <!-- Profile Image -->
+        <div class="card card-primary card-outline">
+          <div class="card-body box-profile">
+            <div class="text-center">
+              <img class="profile-user-img img-fluid img-circle" src="{{profile.get_image}}"
+                alt="User profile picture">
+            </div>
+
+            <h3 class="profile-username text-center">{{user.last_name|title}} {{user.first_name|title}}</h3>
+
+
+            <ul class="list-group list-group-unbordered mb-3">
+              <li class="list-group-item">
+                <b>Usuario</b> <a class="float-right">{{user.username|title}}</a>
+              </li>
+              <li class="list-group-item">
+                <b>Nombres</b> <a class="float-right">{{user.first_name|title}}</a>
+              </li>
+              <li class="list-group-item">
+                <b>Apellidos</b> <a class="float-right">{{user.last_name|title}}</a>
+              </li>
+              <li class="list-group-item">
+                <b>Email</b> <a class="float-right">{{user.email}}</a>
+              </li>
+              
+              <li class="list-group-item">
+                
+                {% if profile.telefono is None %} 
+                  <b>Telefono</b> <a class="float-right">000000000</a>
+                {% else %}
+                  <b>Telefono</b> <a class="float-right">{{profile.telefono}}</a>
+                {% endif %}
+                  
+              </li>
+            </ul>
+            
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+        <!-- About Me Box -->
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">About Me</h3>
+          </div>
+          <!-- /.card-header -->
+          <div class="card-body">
+            <strong><i class="fas fa-book mr-1"></i> Education</strong>
+
+            <p class="text-muted">
+              B.S. in Computer Science from the University of Tennessee at Knoxville
+            </p>
+
+            <hr>
+
+            <strong><i class="fas fa-map-marker-alt mr-1"></i> Location</strong>
+
+            <p class="text-muted">Malibu, California</p>
+
+            <hr>
+
+            <strong><i class="fas fa-pencil-alt mr-1"></i> Skills</strong>
+
+            <p class="text-muted">
+              <span class="tag tag-danger">UI Design</span>
+              <span class="tag tag-success">Coding</span>
+              <span class="tag tag-info">Javascript</span>
+              <span class="tag tag-warning">PHP</span>
+              <span class="tag tag-primary">Node.js</span>
+            </p>
+
+            <hr>
+
+            <strong><i class="far fa-file-alt mr-1"></i> Notes</strong>
+
+            <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam fermentum enim neque.
+            </p>
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+      </div>
+      <!-- /.col -->
+      <div class="col-md-9">
+
+        <!-- /.card -->
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">Actualizar perfil</h3>
+          </div>
+
+          <!-- /.card-header -->
+          <!-- form start -->
+
+          {% if form.errors %}
+          <div class="alert alert-danger" role="alert">
+            {% for key,value in form.errors.items %}
+            {{ value }}
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+
+              <div class="form-group">
+                <label>{{form.telefono.label}}</label>
+                {{form.telefono}}
+              </div>
+              <div class="form-group">
+                <label>{{form.genre.label}}</label>
+                {{form.genre}}
+              </div>
+              <div class="form-group">
+                <label>{{form.avatar.label}}</label>
+                <br>
+                {{form.avatar}}
+              </div>
+          </div>
+          <button type="submit" class="btn btn-primary" value="actualizar">Actualizar</button>
+          </form>
+        </div>
+
+        <!-- /.card-body -->
+
+      </div>
+
+    </div>
+    <!-- /.col -->
+  </div>
+  <!-- /.row -->
+  </div><!-- /.container-fluid -->
+</section>
+<!-- /.section -->
+
+{% endblock %}
