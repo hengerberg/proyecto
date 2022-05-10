@@ -43,9 +43,9 @@ class ProfileView(UpdateView):
     def get_object(self):
         #consultamos si el perfil existe, si no existe lo crea
         try:
-            return Profile.objects.get(usuario=self.request.user)
+            return Profile.objects.get(user=self.request.user)
         except Profile.DoesNotExist:
-            return Profile.objects.create(usuario=self.request.user)
+            return Profile.objects.create(user=self.request.user)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

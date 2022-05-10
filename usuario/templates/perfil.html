@@ -35,10 +35,10 @@
               
               <li class="list-group-item">
                 
-                {% if profile.telefono is None %} 
+                {% if profile.phone is None %} 
                   <b>Telefono</b> <a class="float-right">000000000</a>
                 {% else %}
-                  <b>Telefono</b> <a class="float-right">{{profile.telefono}}</a>
+                  <b>Telefono</b> <a class="float-right">{{profile.phone}}</a>
                 {% endif %}
                   
               </li>
@@ -114,8 +114,8 @@
               {% csrf_token %}
 
               <div class="form-group">
-                <label>{{form.telefono.label}}</label>
-                {{form.telefono}}
+                <label>{{form.phone.label}}</label>
+                {{form.phone}}
               </div>
               <div class="form-group">
                 <label>{{form.genre.label}}</label>

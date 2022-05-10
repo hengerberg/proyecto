@@ -6,9 +6,9 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ('telefono','genre','avatar')
+        fields = ('phone','genre','avatar')
         widgets = {
-            'telefono': forms.NumberInput(
+            'phone': forms.NumberInput(
                 attrs={
                     'class': 'form-control',
                     'placeholder':'099999999',

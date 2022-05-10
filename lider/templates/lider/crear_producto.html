@@ -1,0 +1,118 @@
+{% extends "home/base.html" %}
+{% load static %}
+{% block contenedor %}
+
+<div class="row justify-content-md-center justify-content-center">
+    <div class="col-10 col-md-5 col-sm-6">
+        <div class="card card-outline card-primary">
+            <div class="card-header text-center">
+                <a href="#" class="h1"><b>Nuevo </b>Producto</a>
+            </div>
+            <div class="card-body">
+
+                {% if form.errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for key,value in form.errors.items %}
+                        {{ value }}{{ key }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.name.label }}</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.description.label }}</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.price_in.label }}</label>
+                        {{ form.price_in }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.price_out.label }}</label>
+                        {{ form.price_out }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.seller_commission.label }}</label>
+                        {{ form.seller_commission }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.img.label }}</label>
+                        {{ form.img }}
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.pay_commission }}
+                            <label class="form-check-label">{{ form.pay_commission.label }}</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.is_active }}
+                            <label class="form-check-label">{{ form.is_active.label }}</label>
+                        </div>
+                    </div>
+
+
+
+                    <!--<div class="input-group mb-3">
+                            <select class="form-control" aria-label="Floating label select example">
+                              <option selected>Seleciona una categoria</option>
+                              <option value="1">One</option>
+                              <option value="2">Two</option>
+                              <option value="3">Three</option>
+                            </select>
+                            <div class="input-group-append">
+                                <div class="input-group-text">
+                                    <span class="fas fa-envelope"></span>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input class="form-control" type="file" id="formFile">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                            <label class="form-check-label" for="flexCheckDefault">
+                              Pagar comision
+                            </label>
+                          </div>
+                          
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                            <label class="form-check-label" for="flexCheckDefault">
+                              Activo
+                            </label>
+                          </div>
+                    </div>
+                -->
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-block">Registrar</button>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                </form>
+            </div>
+            <!-- /.form-box -->
+        </div><!-- /.card -->
+    </div>
+</div>
+<!-- /.register-box -->
+{% endblock %}
+

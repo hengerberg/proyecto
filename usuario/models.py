@@ -5,9 +5,6 @@ from django.core.validators import RegexValidator
 
 from Appgestion.settings import MEDIA_URL
 
-
-
-
 class Distribuidora(models.Model):
     nombre = models.CharField(max_length=50)
 
@@ -25,13 +22,13 @@ class Profile(models.Model):
         ('m', 'Masculino'),
         ('f', 'Feminino'),
     )
-    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_profile')
-    distribuidora = models.ForeignKey(Distribuidora,on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_profile')
+    distributor = models.ForeignKey(Distribuidora,on_delete=models.CASCADE)
     genre = models.CharField(max_length=1, choices=GENRE_CHOICES,blank = True, null=True, verbose_name="Genero")
     avatar = models.ImageField(upload_to='profiles',blank = True, null=True, verbose_name='Imagen de Perfil')
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,10}$', message="El número de teléfono debe ingresarse en el formato: '0999999999'. Se permiten hasta 10 dígitos.")
-    telefono = models.CharField(
+    phone = models.CharField(
         validators=[phone_regex],
         max_length=10,
         blank = True, null=True,
@@ -45,5 +42,5 @@ class Profile(models.Model):
         return '{}{}'.format(MEDIA_URL, 'empty.png')
     
     def __str__(self):
-        return '{}'.format(self.usuario)
+        return '{}'.format(self.user)
 

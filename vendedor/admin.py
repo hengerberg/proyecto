@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Product, Category, Report, ReportDetail
+from .models import Report, ReportDetail
+from lider.models import Product, Category
 
 
 class ReportAdmin(admin.ModelAdmin):

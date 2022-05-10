@@ -235,7 +235,7 @@ class InventoryUpdateView(IsSupervisorMixin, ListView):
                         data.append(i.toJSON())
                         #data.insert(0,i.toJSON())
                 data.sort(key=lambda x: x['id'], reverse=True)
-                print(data)
+                #print(data)
             else:
                 print('ha ocurrido un error')
         except Exception as e:
