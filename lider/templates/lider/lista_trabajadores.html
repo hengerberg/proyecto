@@ -43,9 +43,9 @@
         <tbody>
           {% for usuario in object_list %}
           <tr>
-            <td>{{usuario.usuario.first_name}} {{usuario.usuario.last_name}}</td>
+            <td>{{usuario.user.first_name|title}} {{usuario.user.last_name|title}}</td>
            
-            <td>{% if usuario.usuario.is_active %}
+            <td>{% if usuario.user.is_active %}
               <span class="badge badge-success">Activo</span>
               {% else %}
               <span class="badge badge-danger">Desactivo</span>
@@ -53,12 +53,12 @@
             </td>
             <td>roles</td>
             <td><a class="btn btn-primary btn-sm"
-                href="{% url 'supervisor:informacion_vendedor' usuario.usuario.id %}">
+                href="{% url 'supervisor:informacion_vendedor' usuario.user.id %}">
                 <i class="fas fa-folder">
                 </i>
                 View
               </a>
-              <a class="btn btn-info btn-sm" href="{% url 'supervisor:editar_vendedor' usuario.usuario.id %}">
+              <a class="btn btn-info btn-sm" href="{% url 'supervisor:editar_vendedor' usuario.user.id %}">
                 <i class="fas fa-pencil-alt">
                 </i>
                 Edit

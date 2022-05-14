@@ -1,0 +1,42 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block contenedor %}
+
+<!-- Main content -->
+<section class="content">
+  <div class="row">
+    {% if object_list %}
+    {% for product in object_list %}
+    <div class="col-md-3 col-sm-4">
+
+      <div class="card" style="width: 15rem;">
+        <img src="{{product.get_image}}" class="card-img-top" alt="..." style="width: 15rem; height: 15rem">
+        <div class="card-body">
+          <h5 class="card-title">{{product.name|title}}</h5>
+          <p class="card-text">{{product.description}}</p>
+          <a href="{% url 'lider:info_producto' product.id %}" class="btn btn-primary">Ver</a>
+          <a href="{% url 'lider:actualizar_producto' product.id %}" class="btn btn-success">Modificar</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="row"> 
+    <div class="alert alert-info alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+      <h5><i class="icon fas fa-info"></i> Alerta!</h5>
+      No existen productos en la base de datos. Por favor agraga los productos
+    </div>
+      <div class="col-md-4">
+        <a href="{% url 'lider:agregar_producto' %}" type="button" class="btn btn-block btn-primary btn-lg">Añadir Producto</a>
+      </div>
+    </div>
+    {% endif %}
+
+
+
+  </div>
+</section>
+<!-- /.content -->
+{% endblock %}

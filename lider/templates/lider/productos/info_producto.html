@@ -1,0 +1,82 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block contenedor %}
+
+<!-- Main content -->
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card" style="width: 18rem;">
+                <img src="{{product.get_image}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                  <h3 class="card-title">{{product.name|title}}</h3>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                  <h3 class="card-title">Descripcion</h3>
+                  <p class="card-text">{{product.description}}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                  <h5 class="card-title">Comisiones</h5>
+                  <table class="table">
+                    <tbody>
+                      <tr>
+                        <th style="width:50%">Precio para el Cliente:</th>
+                        <td>$ {{product.price_out}}</td>
+                      </tr>
+                      <tr>
+                        <th>Precio para el vendedor:</th>
+                        <td>$ {{product.price_in}}</td>
+                      </tr>
+                      <tr>
+                        <th>Comision del vendedor:</th>
+                        <td>$ {{product.seller_commission}}</td>
+                      </tr>
+                      <tr>
+                        <th>Pagar comision al vendedor:</th>
+                        {% if product.pay_commission%}
+                        <td>Si</td>
+                        {% else %}
+                        <td>No</td>
+                        {% endif %}
+                      </tr>
+                      <tr>
+                        <th>Activo:</th>
+                        {% if product.is_active%}
+                        <td>Si</td>
+                        {% else %}
+                        <td>No</td>
+                        {% endif %}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <a href="{% url 'lider:actualizar_producto' product.id %}" class="btn btn-primary">Modificar</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+</section>
+<!-- /.content -->
+{% endblock %}
