@@ -2,7 +2,7 @@
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="{% url 'inicio' %}" class="brand-link">
+    <a href="{% url 'home:dashboard' %}" class="brand-link">
         <img src="{% static 'dist/img/AdminLTELogo.png' %}" alt="AdminLTE Logo"
             class="brand-image img-circle elevation-3" style="opacity: .8">
         <span class="brand-text font-weight-light">{{ user.user_profile.distributor }}</span>
@@ -17,7 +17,7 @@
 
             </div>
             <div class="info">
-                <a href="{% url 'perfil' %}" class="d-block">{{ user.first_name|title }} {{ user.last_name|title }} </a>
+                <a href="{% url 'user:perfil' %}" class="d-block">{{ user.first_name|title }} {{ user.last_name|title }} </a>
             </div>
         </div>
         <!-- SidebarSearch Form -->
@@ -39,9 +39,10 @@
              with font-awesome or any other icon font library -->
              {% include 'supervisor/sidebar.html' %}
              {% include 'vendedor/sidebar.html' %}
+             {% include 'usuario/sidebar.html' %}
              {% include 'lider/sidebar.html' %}
                 <li class="nav-item">
-                    <a href="{% url 'logout' %}" class="nav-link">
+                    <a href="{% url 'user:logout' %}" class="nav-link">
                         <i class="nav-icon fas fa-power-off"></i>
                         <p> Salir</p>
                     </a>

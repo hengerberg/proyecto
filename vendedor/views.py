@@ -15,30 +15,22 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from inventory.models import Inventory, InventoryCurrent
 from inventory.functions import ordenes
 from .models import Product, Report, ReportDetail
-from .mixins import IsSellerMixin
+from lider.mixins import ValidatePermissionRequiredMixin
 from .forms import ReportForm
 
 # Create your views here.
 
 # LoginRequiredMixin es el mixin que trae django incorporado, tambien se puede usar
 # el decorador @login_required
-class IndexView(LoginRequiredMixin,IsSellerMixin,TemplateView):
-    template_name = 'vendedor/inicio.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Inicio'
-        return context
-    
-
-
-class ReportCreateView(IsSellerMixin,CreateView):
+class ReportCreateView(LoginRequiredMixin,ValidatePermissionRequiredMixin,CreateView):
     #permission_required = 'vendedor.view_inventory'
     # Or multiple permissions
     #permission_required = ('catalog.can_mark_returned', 'catalog.can_edit')
     # Note that 'catalog.can_edit' is just an example
     # the catalog application doesn't have such permission!
     model = Report
+    permission_required = 'report.add_report'
     form_class = ReportForm
     template_name = 'vendedor/reportar-ventas.html'
     success_url = reverse_lazy('vendedor:lista-reportes')
@@ -116,7 +108,8 @@ class ReportCreateView(IsSellerMixin,CreateView):
 
 
 
-class ReportListView(IsSellerMixin, ListView):
+class ReportListView(ValidatePermissionRequiredMixin,ListView):
+    permission_required = 'vendedor.view_report'
     model = Report
     template_name = 'vendedor/lista-reportes.html'
 
@@ -153,8 +146,8 @@ class ReportListView(IsSellerMixin, ListView):
 
 
 
-class MySalesListView(IsSellerMixin, ListView):
-    
+class MySalesListView(ValidatePermissionRequiredMixin,ListView):
+    permission_required = 'vendedor.view_reportdetail'
     template_name = 'vendedor/mis-ventas.html'
 
     def get_queryset(self):
@@ -194,7 +187,8 @@ class MySalesListView(IsSellerMixin, ListView):
         return context
 
 
-class InventoryListView(IsSellerMixin, ListView):
+class InventoryListView(ListView):
+    permission_required = 'inventory.view_inventory'
     model = Inventory
     template_name = 'vendedor/inventario.html'
 

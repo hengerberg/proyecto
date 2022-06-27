@@ -8,7 +8,7 @@ from django.views.generic import ListView, CreateView, UpdateView
 from django.views.generic.base import TemplateView
 from django.urls.base import reverse_lazy
 from django.db import transaction
-from django.contrib.auth.models import User
+from usuario.models import User
 
 from .forms import FormularioCrearVendedor, SellerUpdateForm
 from usuario.models import Profile
@@ -16,22 +16,24 @@ from .models import GrupSupervisor
 from inventory.models import Inventory, InventoryCurrent
 from inventory.functions import update_inventory, ordenes
 from vendedor.models import Report, ReportDetail
-from .mixins import IsSupervisorMixin
+from lider.mixins import ValidatePermissionRequiredMixin
 
 
 # Create your views here.
 
-class IndexView(IsSupervisorMixin, TemplateView):
-    template_name = 'supervisor/inicio.html'
+'''
+permisos de supervisor
+usuario.add_seller
+usuario.view_seller
+usuario.change_seller
+usuario.del_seller
+inventory.view_inventory
+inventory.change_inventory
+vendedor.view_report
+'''
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Inicio'
-        
-        return context
-
-
-class SellerCreateView(IsSupervisorMixin, CreateView):
+class SellerCreateView(ValidatePermissionRequiredMixin,CreateView):
+    permission_required = 'usuario.add_seller'
     model = User
     form_class = FormularioCrearVendedor
     template_name = 'supervisor/vendedor/crear_vendedor.html'
@@ -40,7 +42,7 @@ class SellerCreateView(IsSupervisorMixin, CreateView):
     # sobreescribimos el metodo post de la vista generica CreateView
     def post(self, request, *args, **kwargs):
         form = FormularioCrearVendedor(request.POST)
-        print(request.user.user_profile.distribuidora_id)
+        #print(request.user.user_profile.distribuidora_id)
         if form.is_valid():
             # commit  = False es para decirle que no queremos guardar el modelo todavia
             vendedor = form.save()
@@ -73,7 +75,8 @@ class SellerCreateView(IsSupervisorMixin, CreateView):
         return context
 
 
-class SellerListView(IsSupervisorMixin, ListView):
+class SellerListView(ValidatePermissionRequiredMixin,ListView):
+    permission_required = 'usuario.view_seller'
     model = GrupSupervisor
     template_name = 'supervisor/vendedor/listar_vendedores.html'
 
@@ -88,7 +91,8 @@ class SellerListView(IsSupervisorMixin, ListView):
         return context
 
 
-class SellerUpdateView(IsSupervisorMixin, UpdateView):
+class SellerUpdateView(ValidatePermissionRequiredMixin,UpdateView):
+    permission_required = 'usuario.change_seller'
     model = User
     form_class = SellerUpdateForm
     template_name = "supervisor/vendedor/editar_vendedor.html"
@@ -101,8 +105,8 @@ class SellerUpdateView(IsSupervisorMixin, UpdateView):
         return context
 
 
-class SellerInfoInventoryListView(IsSupervisorMixin, ListView):
-    
+class SellerInfoInventoryListView(ValidatePermissionRequiredMixin,ListView):
+    permission_required = 'inventory.view_inventorycurrent'
     model = Inventory
     template_name = 'supervisor/vendedor/informacion_vendedor.html'
     success_url = reverse_lazy('supervisor:lista_vendedores')
@@ -112,7 +116,6 @@ class SellerInfoInventoryListView(IsSupervisorMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        
         query = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
         return query
 
@@ -186,7 +189,8 @@ class SellerInfoInventoryListView(IsSupervisorMixin, ListView):
         return context
 
 
-class InventoryUpdateView(IsSupervisorMixin, ListView):
+class InventoryUpdateView(ValidatePermissionRequiredMixin,ListView):
+    permission_required = 'inventory.change_inventory'
     model = Inventory
     template_name = 'supervisor/agregar_inventario.html'
     #form_class = InventoryAddForm
@@ -251,7 +255,8 @@ class InventoryUpdateView(IsSupervisorMixin, ListView):
         return context
     
 
-class LiquidationsListView(IsSupervisorMixin, ListView):
+class LiquidationsListView(ValidatePermissionRequiredMixin,ListView):
+    permission_required = 'vendedor.view_report'
     model = GrupSupervisor
     template_name = 'supervisor/liquidaciones.html'
 

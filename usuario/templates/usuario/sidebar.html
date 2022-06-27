@@ -1,0 +1,21 @@
+{% if perms.usuario.add_user %}
+<li class="nav-item">
+    <a href="{% url 'user:crear_usuario' %}" class="nav-link">
+        <i class="nav-icon fas fa-user"></i>
+        <p>
+            Nuevo Trabajador
+        </p>
+    </a>
+</li>
+{% endif %}
+
+{% if perms.usuario.view_seller and perms.usuario.view_supervisor and perms.usuario.view_user%}
+<li class="nav-item">
+    <a href="{% url 'user:lista_usuarios' %}" class="nav-link">
+        <i class="nav-icon fas fa-users"></i>
+        <p>
+            Trabajadores
+        </p>
+    </a>
+</li>
+{% endif %}

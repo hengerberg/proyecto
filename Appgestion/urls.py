@@ -28,6 +28,7 @@ urlpatterns = [
     path('supervisor/', include('supervisor.urls')),
     path('vendedor/', include('vendedor.urls')),
     path('lider/', include('lider.urls')),
+    path('dashboard/', include('home.urls')),
     
     
     

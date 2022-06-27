@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.urls import reverse
+from usuario.models import User
 
 from lider.models import Product
 
@@ -14,7 +15,7 @@ class Report(models.Model):
         ('aprobado', 'Aprobado'),
         
     ]
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     state = models.CharField(max_length=20, choices=STATE, default = 'pendiente')
     subtotal = models.FloatField()

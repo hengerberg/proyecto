@@ -146,10 +146,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # pagina de redireccion despues del login
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 
 # url para redireccionar cuando termine la sesion
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/'
 
-# redirecion cuando el login es requerido
-LOGIN_URL = '/accounts/login/'
+# redireccion cuando el login es requerido
+LOGIN_URL = '/'
+
+AUTH_USER_MODEL = 'usuario.User'

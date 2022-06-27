@@ -4,7 +4,7 @@ from .views import *
 
 app_name = 'vendedor'
 urlpatterns = [
-    path('', IndexView.as_view(), name='inicio'),
+    
     #reportes
     path('reporte/add', ReportCreateView.as_view(), name='crear-reporte'),
     path('reporte/list', ReportListView.as_view(), name='lista-reportes'),

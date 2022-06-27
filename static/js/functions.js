@@ -41,7 +41,7 @@ function submit_with_ajax(url, title, content, parameters, callback) {
                     }).done(function (data) {
                         console.log(data);
                         if (!data.hasOwnProperty('error')) {
-                            callback();
+                            callback(data);
                             return false;
                         }
                         message_error(data.error);
@@ -62,7 +62,6 @@ function submit_with_ajax(url, title, content, parameters, callback) {
         }
     })
 }
-
 function alert_action(title, content, callback) {
     $.confirm({
         theme: 'material',

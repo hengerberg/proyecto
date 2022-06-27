@@ -1,12 +1,14 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
-from .models import Profile,Distribuidora
+from .models import Profile,Distribuidora,User
 
 
 admin.site.register(Distribuidora)
 
 admin.site.register(Profile)
+admin.site.register(User, UserAdmin)
 
 # Register your models here.
 

@@ -6,7 +6,7 @@ from .views import *
 
 app_name = 'supervisor'
 urlpatterns = [
-    path('', IndexView.as_view(), name='inicio'),
+  
     #vendedor
     path('vendedor/add', SellerCreateView.as_view(), name='crear_vendedor'),
     path('vendedor/list', SellerListView.as_view(), name='lista_vendedores'),

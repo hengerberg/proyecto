@@ -1,20 +1,4 @@
-{% if perms.inventory.add_inventory%}
-<li class="nav-item">
-    <a href="{% url 'lider:crear_supervisor' %}" class="nav-link">
-        <i class="nav-icon far fa-image"></i>
-        <p>
-            Registrar Supervisor
-        </p>
-    </a>
-</li>
-<li class="nav-item">
-    <a href="{% url 'lider:lista_trabajadores' %}" class="nav-link">
-        <i class="nav-icon far fa-image"></i>
-        <p>
-            Trabajadores
-        </p>
-    </a>
-</li>
+{% if perms.lider.view_product %}
 <li class="nav-item">
     <a href="#" class="nav-link">
         <i class="nav-icon fas fa-boxes"></i>
@@ -27,13 +11,14 @@
                 <p>Ver Productos</p>
             </a>
         </li>
+        {% if perms.lider.add_product %}
         <li class="nav-item">
             <a href="{% url 'lider:agregar_producto' %}" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Nuevo Producto</p>
             </a>
         </li>
+        {% endif %}
     </ul>
 </li>
-
 {% endif %}

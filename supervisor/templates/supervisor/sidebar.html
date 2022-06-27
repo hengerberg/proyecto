@@ -2,37 +2,48 @@
     Para MOSTRAR el contenido al que puede 
     acceder el usuario segun los permisos que tenga 
 -->
-{% if perms.supervisor.view_grupsupervisor%}
+{% if perms.vendedor.view_report %}
 <li class="nav-item">
     <a href="{% url 'supervisor:liquidaciones' %}" class="nav-link">
         <i class="nav-icon fas fa-clipboard-check"></i>
         <p>Liquidaciones</p>
     </a>
 </li>
+{% endif %}
+
+{% if perms.auth.add_user %}
 <li class="nav-item">
     <a href="{% url 'supervisor:crear_vendedor' %}" class="nav-link">
         <i class="nav-icon fas fa-user"></i>
         <p>Registrar Vendedor</p>
     </a>
 </li>
+{% endif %}
+
+{% if perms.auth.view_user %}
 <li class="nav-item">
     <a href="{% url 'supervisor:lista_vendedores' %}" class="nav-link">
         <i class="nav-icon fas fa-user"></i>
         <p>Lista de Vendedores</p>
     </a>
 </li>
+{% endif %}
+
+{% if perms.inventory.view_inventory %}
 <li class="nav-item">
     <a href="#" class="nav-link">
         <i class="nav-icon fas fa-boxes"></i>
         <p>Inventario<i class="fas fa-angle-left right"></i></p>
     </a>
     <ul class="nav nav-treeview">
+        {% if perms.inventory.add_inventory %}
         <li class="nav-item">
             <a href="{% url 'supervisor:agregar-inventario' %}" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Agregar</p>
             </a>
         </li>
+        {% endif %}
         <li class="nav-item">
             <a href="#" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
@@ -41,6 +52,6 @@
         </li>
     </ul>
 </li>
-
-
 {% endif %}
+
+
