@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}}</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+  <!-- jQuery -->
+  <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+  <!-- Bootstrap 4 -->
+  <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <!-- AdminLTE App -->
+  <script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+  <!-- Sweetalert2 -->
+  <script src="{% static 'plugins/sweetalert2-9.10.0/sweetalert2.all.min.js' %}"></script>
+  <!-- Jquery Confirm -->
+  <link rel="stylesheet" href="{% static 'plugins/jquery-confirm-v3.3.4/jquery-confirm.min.css' %}">
+  <script src="{% static 'plugins/jquery-confirm-v3.3.4/jquery-confirm.min.js' %}"></script>
+  <!-- Funciones -->
+  <script src="{% static 'js/functions.js' %}"></script>
+
+  {% block head %}
+
+  {% endblock %}
+</head>
+
+<body class="hold-transition login-page">
+  {% block content %}
+
+  {% endblock %}
+</body>
+
+</html>

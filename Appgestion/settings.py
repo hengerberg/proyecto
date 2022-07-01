@@ -155,3 +155,18 @@ LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/'
 
 AUTH_USER_MODEL = 'usuario.User'
+
+# Email
+
+EMAIL_HOST = 'smtp.gmail.com'
+
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = 'alexander.vegas.93@gmail.com'
+
+#para conectar con el servisor de gmail tenemos que crear una contraseña de aplicacion en 
+# https://myaccount.google.com/apppasswords
+# foro https://support.google.com/mail/thread/153463862?hl=es
+EMAIL_HOST_PASSWORD = 'gywbqcprkryeycsu'
+
+DOMAIN = ''

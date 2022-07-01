@@ -1,7 +1,4 @@
-<!-- 
-    Para MOSTRAR el contenido al que puede 
-    acceder el usuario segun los permisos que tenga 
--->
+
 {% if perms.vendedor.view_report %}
 <li class="nav-item">
     <a href="{% url 'supervisor:liquidaciones' %}" class="nav-link">

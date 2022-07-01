@@ -11,6 +11,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.db.models import Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 
 from inventory.models import Inventory, InventoryCurrent
 from inventory.functions import ordenes
@@ -197,8 +198,10 @@ class InventoryListView(ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        
-        data = ordenes(request, self.request.user.id)
+        try:
+            data = ordenes(request, self.request.user.id)
+        except Exception as e:
+            data['error'] = str(e)
 
         return JsonResponse(data, safe=False)
             
@@ -206,7 +209,12 @@ class InventoryListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['inventario_actual'] = InventoryCurrent.objects.get(user_id=self.request.user.id)
+        try:
+            data = InventoryCurrent.objects.get(user_id=self.request.user.id)
+        except Exception as e:
+            data = messages.error(self.request, 'No tienes inventario asociado')
+
+        context['inventario_actual'] = data
         context['title'] = 'Inventario'
         context['entity'] = 'Inventario'
         return context

@@ -7,6 +7,7 @@ from django.forms.models import model_to_dict
 from Appgestion.settings import MEDIA_URL
 
 class User(AbstractUser):
+    token = models.UUIDField(primary_key=False, editable=False,null=True, blank=True) # token que se crear cuando se reseta la contraseña
 
     def toJSON(self):
         # model_to_dict sirve para obtener un diccionario a partir del 
