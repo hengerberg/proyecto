@@ -1,18 +1,18 @@
-{% if perms.vendedor.view_report %}
+{% if perms.vendedor.view_report and perms.vendedor.add_report %}
 <li class="nav-item">
     <a href="#" class="nav-link">
         <i class="nav-icon fas fa-edit"></i>
         <p>Liquidaciones<i class="fas fa-angle-left right"></i></p>
     </a>
     <ul class="nav nav-treeview">
-        {% if perms.vendedor.add_report %}
+       
         <li class="nav-item">
             <a href="{% url 'vendedor:crear-reporte' %}" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Liquidar Ventas</p>
             </a>
         </li>
-        {% endif %}
+      
         <li class="nav-item">
             <a href="{% url 'vendedor:lista-reportes' %}" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
@@ -32,12 +32,5 @@
 </li>
 {% endif %}
 
-{% if perms.inventory.view_inventory %}
-<li class="nav-item">
-    <a href="{% url 'vendedor:inventario' %}" class="nav-link">
-        <i class="nav-icon fas fa-dollar-sign"></i>
-        <p>Inventario</p>
-    </a>
-</li>
-{% endif %}
+
 

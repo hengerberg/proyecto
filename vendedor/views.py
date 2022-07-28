@@ -12,6 +12,7 @@ from django.views.generic.edit import CreateView
 from django.db.models import Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.db.models import Q
 
 from inventory.models import Inventory, InventoryCurrent
 from inventory.functions import ordenes
@@ -24,6 +25,14 @@ from .forms import ReportForm
 # LoginRequiredMixin es el mixin que trae django incorporado, tambien se puede usar
 # el decorador @login_required
 
+"""
+permisos
+report.add_report
+vendedor.view_report
+vendedor.view_reportdetail
+inventory.view_inventory
+"""
+
 class ReportCreateView(LoginRequiredMixin,ValidatePermissionRequiredMixin,CreateView):
     #permission_required = 'vendedor.view_inventory'
     # Or multiple permissions
@@ -31,7 +40,7 @@ class ReportCreateView(LoginRequiredMixin,ValidatePermissionRequiredMixin,Create
     # Note that 'catalog.can_edit' is just an example
     # the catalog application doesn't have such permission!
     model = Report
-    permission_required = 'report.add_report'
+    permission_required = 'vendedor.add_report'
     form_class = ReportForm
     template_name = 'vendedor/reportar-ventas.html'
     success_url = reverse_lazy('vendedor:lista-reportes')
@@ -46,10 +55,11 @@ class ReportCreateView(LoginRequiredMixin,ValidatePermissionRequiredMixin,Create
             action = request.POST['action']
             if action == 'search_products':
                 data = []
+                ids_exclude = json.loads(request.POST['ids']) # convertimos a lista los id de los productos que vamos a excluir
                 prods = Product.objects.filter(
                     name__icontains=request.POST['term'],
                     is_active=True)
-                for i in prods:
+                for i in prods.exclude(id__in = ids_exclude):
                     item = i.toJSON()
                     item['value'] = i.name
                     data.append(item)
@@ -108,7 +118,6 @@ class ReportCreateView(LoginRequiredMixin,ValidatePermissionRequiredMixin,Create
         return context
 
 
-
 class ReportListView(ValidatePermissionRequiredMixin,ListView):
     permission_required = 'vendedor.view_report'
     model = Report
@@ -127,7 +136,6 @@ class ReportListView(ValidatePermissionRequiredMixin,ListView):
                 for i in Report.objects.filter(user_id=self.request.user.id):
                     data.insert(0,i.toJSON())
                     #data.append(i.toJSON())
-
             elif action == 'search_details_prod':
                 data = []
                 for i in ReportDetail.objects.filter(report_id=request.POST['id']):
@@ -136,7 +144,6 @@ class ReportListView(ValidatePermissionRequiredMixin,ListView):
                 data['error'] = 'Ha ocurrido un error'
         except Exception as e:
             data['error'] = str(e)
-
         return JsonResponse(data, safe=False)
 
     def get_context_data(self, **kwargs):
@@ -144,7 +151,6 @@ class ReportListView(ValidatePermissionRequiredMixin,ListView):
         context['title'] = 'Liquidaciones'
         context['entity'] = 'Liquidaciones'
         return context
-
 
 
 class MySalesListView(ValidatePermissionRequiredMixin,ListView):
@@ -158,8 +164,12 @@ class MySalesListView(ValidatePermissionRequiredMixin,ListView):
         year = datetime.datetime.today().year
         start_date = datetime.date(year, self.month, 1)
         end_date = datetime.date(year, self.month, day)
-        
-        liquidaciones = ReportDetail.objects.filter(report__user_id = self.request.user.id, report__state = 'aprobado', report__date__range=(start_date, end_date))
+        # utilizamos el objeto Q para combinar dos o mas consultas
+        liquidaciones = ReportDetail.objects.filter(Q(report__user_id = self.request.user.id,
+                                                    report__state = 'finalizado',
+                                                    report__date__range=(start_date, end_date)) | Q(report__user_id = self.request.user.id,
+                                                    report__state = 'aprobado',
+                                                    report__date__range=(start_date, end_date)))
         products = Product.objects.all()
         self.products= {} #aqui vamos a guardar los datos relacionados con los productos vendidos
         
@@ -171,7 +181,7 @@ class MySalesListView(ValidatePermissionRequiredMixin,ListView):
                 comision_por_cobrar=Sum('commission_receivable'),
                 total=Sum('commission_paid')+Sum('commission_receivable')
                 )
-
+            
         for product in self.products:
             for key in self.products[product]:
                 if self.products[product][key] == None:

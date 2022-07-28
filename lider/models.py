@@ -34,7 +34,7 @@ class Product(models.Model):
     price_out = models.FloatField('precio para el cliente')
     seller_commission = models.FloatField('comision del vendedor')
     pay_commission = models.BooleanField('Pagar comision')
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField('Activo',default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

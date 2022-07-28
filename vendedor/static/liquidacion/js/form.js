@@ -10,6 +10,14 @@ var vents = {
         total: 0.00,
         products: []
     },
+    
+    get_ids: function () {
+        var ids = [];
+        $.each(this.items.products, function (key, value) {
+            ids.push(value.id);
+        });
+        return ids;
+    },
     calculate_report: function () {
         var subtotal = 0.00;
         var commission_paid = 0.00;
@@ -135,9 +143,9 @@ var vents = {
                 },
             ],
             rowCallback(row, data, displayNum, displayIndex, dataIndex) { // permite devolver el tr de la tabla
-                $(row).find('input[name="cant"]').TouchSpin({ // co jquery, busca el componente llamado cant y agregale el touchspin
+                $(row).find('input[name="cant"]').TouchSpin({ // con jquery, busca el componente llamado cant y agregale el touchspin
                     min: 1,
-                    max: 100,
+                    max: 50,
                     step: 1,
 
                 });
@@ -146,6 +154,9 @@ var vents = {
 
             }
         });
+        console.clear();
+        //console.log(this.items);
+        //console.log(this.get_ids());
     },
 };
 $(function () {
@@ -157,7 +168,8 @@ $(function () {
                 type: 'POST',
                 data: {
                     'action': 'search_products',
-                    'term': request.term
+                    'term': request.term,
+                    'ids': JSON.stringify(vents.get_ids()) // enviamos los ids a la vista los datos de los productos agregados
                 },
                 dataType: "json",
             }).done(function (data) {
@@ -175,7 +187,7 @@ $(function () {
             console.clear();
             ui.item.cant = 1;
             ui.item.subtotal = 0.00;
-            console.log(vents.items);
+            //console.log(vents.items);
 
             vents.add(ui.item);
 
@@ -218,7 +230,7 @@ $(function () {
             var cant = parseInt($(this).val()); // guardo en la variable cant lo que tenga el input
             // console.log(cant);
             var tr = tblProducts.cell($(this).closest('td, li')).index(); // obtenemos el indice el array que esta el producto
-            console.log(tr)
+            //console.log(tr)
             vents.items.products[tr.row].cant = cant; // modifico la variable de cantidad del producto asignandole cant
             vents.calculate_report();
             $('td:eq(5)', tblProducts.row(tr.row).node()).html('$' + vents.items.products[tr.row].subtotal.toFixed(2));

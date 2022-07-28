@@ -17,7 +17,9 @@
                                 <tr>
                                     <th scope="col">Activaciones</th>
                                     <th scope="col">Cantidad</th>
-                                    <th scope="col">$</th>
+                                    <th scope="col">Comisión Cobrada</th>
+                                    <th scope="col">Comisión por Cobrar</th>
+                                    <th scope="col">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -26,6 +28,8 @@
                                     {% if value.quantity__sum != 0 %}
                                         <td>{{key|title}}</td>
                                         <td>{{value.quantity__sum}}</td>
+                                        <td>${{value.comision_pagada}}</td>
+                                        <td>${{value.comision_por_cobrar}}</td>
                                         <td>${{value.total}}</td>
                                     {% endif %}
                                 </tr>

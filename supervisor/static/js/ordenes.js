@@ -1,14 +1,13 @@
 var tblSale;
-
 $(function () {
-
+    
     tblSale = $('#ordenes').DataTable({
         responsive: true,
         autoWidth: false,
         destroy: true,
         deferRender: true,
         info: false,
-        //orderFixed: [ 1, 'dec' ],
+        orderFixed: [ 0, 'dec' ],
         language: {
             "decimal": "",
             "emptyTable": "No hay información",
@@ -36,9 +35,10 @@ $(function () {
             data: {
                 'action': 'searchdata'
             },
-            dataSrc: ""
+            dataSrc: "",
         },
         columns: [
+            { "data": "id" },
             { "data": "user" },
             { "data": "date" },
             { "data": "chips_sale" },
@@ -48,16 +48,27 @@ $(function () {
             {
                 targets: [-1, -2],
                 class: 'text-center',
-                orderable: false
+                orderable: false,
+                render: function (data, type, row) {
+                    if (data > 0){
+                        return '<span class="badge bg-success"> + ' + data + ' </span>';
+                    } else if (data < 0){
+                        return '<span class="badge bg-danger"> ' + data + ' </span>';
+                    } else {
+                        return data;
+                    }
+                }
             },
             {
-                targets: [-3,-4],
+                targets: [0],
                 class: 'text-center',
-                
+                orderable: false,
+                render: function (data, type, row) {
+                    return '';
+                }
             },
-            
-            
         ],
     });
-
+    
+    
 });

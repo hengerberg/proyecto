@@ -29,10 +29,11 @@
                                 <b>Chips Portabilidad</b> <a class="float-right">{{object_list.chips_portability}}</a>
                             </li>
                         </ul>
-                        <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal-inventory-add">
+                        <button type="button" class="btn btn-primary btn-block" data-toggle="modal"
+                            data-target="#modal-inventory-add">
                             Agregar
                         </button>
-                        
+
                     </div>
                 </div>
             </div>
@@ -47,6 +48,7 @@
                         <table class="table" id="ordenes">
                             <thead>
                                 <tr>
+                                    <th style="width: 1%"></th>
                                     <th>Vendedor</th>
                                     <th>Fecha</th>
                                     <th>Chip ventas</th>
@@ -54,9 +56,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-            
+
                             </tbody>
-            
+
                         </table>
                     </div>
                     <!-- /.card-body -->
@@ -64,10 +66,11 @@
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+    </div>
+    {% endblock %}
 
 
-{% block script %}
-{% include 'supervisor/inventario_add_modal.html' %}
-{% endblock %}
+    {% block script %}
+    {% include 'supervisor/inventario_add_modal.html' %}
+
+    {% endblock %}

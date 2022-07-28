@@ -92,7 +92,7 @@ $(function () {
         .on('click', 'a[rel="details"]', function () {
             var tr = tblSale.cell($(this).closest('td, li')).index();
             var data = tblSale.row(tr.row).data();
-            console.log(data);
+            //console.log(data);
 
             $('#tblDet').DataTable({
                 responsive: true,

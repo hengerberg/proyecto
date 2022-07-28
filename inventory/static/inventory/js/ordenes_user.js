@@ -46,12 +46,20 @@ $(function () {
             {
                 targets: [-1, -2],
                 class: 'text-center',
-                orderable: false
+                orderable: false,
+                render: function (data, type, row) {
+                    if (data > 0){
+                        return '<span class="badge bg-success"> + ' + data + ' </span>';
+                    } else if (data < 0){
+                        return '<span class="badge bg-danger"> ' + data + ' </span>';
+                    } else {
+                        return data;
+                    }
+                }
             },
             {
                 targets: [-3],
                 class: 'text-center',
-                
             },
             
         ],

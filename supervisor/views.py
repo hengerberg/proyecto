@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.shortcuts import render, redirect
 from django.http.response import HttpResponseRedirect, JsonResponse
@@ -9,8 +10,8 @@ from django.views.generic.base import TemplateView
 from django.urls.base import reverse_lazy
 from django.db import transaction
 from usuario.models import User
-
-from .forms import FormularioCrearVendedor, SellerUpdateForm
+from django.contrib import messages
+from .forms import SalesCreateForm, SellerUpdateForm,SellerCreateForm
 from usuario.models import Profile
 from .models import GrupSupervisor
 from inventory.models import Inventory, InventoryCurrent
@@ -30,48 +31,55 @@ usuario.del_seller
 inventory.view_inventory
 inventory.change_inventory
 vendedor.view_report
+
+por terminar reparar la vista SellerInfoInventoryListView
 '''
 
 class SellerCreateView(ValidatePermissionRequiredMixin,CreateView):
     permission_required = 'usuario.add_seller'
     model = User
-    form_class = FormularioCrearVendedor
+    form_class = SellerCreateForm
     template_name = 'supervisor/vendedor/crear_vendedor.html'
     success_url = reverse_lazy('supervisor:lista_vendedores')
 
-    # sobreescribimos el metodo post de la vista generica CreateView
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
-        form = FormularioCrearVendedor(request.POST)
-        #print(request.user.user_profile.distribuidora_id)
-        if form.is_valid():
-            # commit  = False es para decirle que no queremos guardar el modelo todavia
-            vendedor = form.save()
-            # agrego datos que no estan definidos en el formulario
-        
-            # extraemos los datos del vendedor creado
-            ven = User.objects.get(username=vendedor.username)
-            # agregamos al vendedor creado al su grupo correspondiente
-            grupo = GrupSupervisor(supervisor_id=request.user.id, vendedor_id=ven.id)
-            grupo.save()
-            # agregamos al vendedor a su respectiva distribuidora
-            distribuidora = Profile(usuario_id=ven.id, distribuidora_id=request.user.user_profile.distribuidora_id)
-            distribuidora.save()
-            inventory = Inventory(user_id=ven.id)
-            inventory.save()
-            inventory = InventoryCurrent(user_id=ven.id)
-            inventory.save()
-            return HttpResponseRedirect(self.success_url)
-        # como no retorna nada colcamos self.object = None
-        self.object = None
-        # agregamos de nuevo el formulario con los errores devueltos
-        context = self.get_context_data(**kwargs)
-        context['form'] = form
-        return render(request, self.template_name, context)
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'add':
+                with transaction.atomic():
+                    form = self.get_form()
+                    data = form.save()
+                    # extraemos los datos del usuario creado
+                    user = User.objects.get(username=data['username'])
+                    #creamos el perfil
+                    perfil = Profile(distributor_id=request.user.user_profile.distributor_id, user_id=user.id)
+                    perfil.save()
+                    # agregamos al vendedor al grupo de vendedores
+                    sup_group = GrupSupervisor(supervisor_id=request.user.id, vendedor_id = user.id)
+                    sup_group.save()
+                    if user.groups.filter(name__in=['supervisor', 'vendedor']): # comprobamos si el usuario tiene asignado alguno de estos grupos
+                        #creamos el inventario
+                        inventory = Inventory(user_id=user.id)
+                        inventory.save()
+                        inv = InventoryCurrent(user_id=user.id)
+                        inv.save()
+            else:
+                data['error'] = 'No ha ingresado a ninguna opción'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Registro de vendedores'
         context['entity'] = 'Nuevo Vendedor'
+        context['titleForm'] = 'Nuevo Usuario'
+        context['list_url'] = self.success_url
+        context['action'] = 'add'
         return context
 
 
@@ -105,9 +113,10 @@ class SellerUpdateView(ValidatePermissionRequiredMixin,UpdateView):
         return context
 
 
-class SellerInfoInventoryListView(ValidatePermissionRequiredMixin,ListView):
-    permission_required = 'inventory.view_inventorycurrent'
+class SellerInfoInventoryListView(ValidatePermissionRequiredMixin,UpdateView):
+    permission_required = 'usuario.view_seller'
     model = Inventory
+    form_class = SellerUpdateForm
     template_name = 'supervisor/vendedor/informacion_vendedor.html'
     success_url = reverse_lazy('supervisor:lista_vendedores')
 
@@ -115,77 +124,61 @@ class SellerInfoInventoryListView(ValidatePermissionRequiredMixin,ListView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
-    def get_queryset(self):
-        query = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
-        return query
-
     def post(self, request, *args, **kwargs):
-        """
-        por crear mensaje de error cuando el supervisor no tiene suficientes chip para agregar y 
-        para retirar mas chips de los que tiene el vendedor
-        """
+       
+        data = {}
         try:
             action = request.POST['action']
             if action == 'add':
-                venta,portabilidad =request.POST.get('venta'),request.POST.get('portabilidad')
-       
-                if venta == '' and portabilidad == '':
-                    return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+                venta,porta = request.POST['venta'],request.POST['portabilidad']
+                if venta == '': venta = 0
+                else: venta = int(venta)
+                if porta == '': porta = 0
+                else: porta = int(porta)
+                if venta > 0 or porta > 0:
+                    with transaction.atomic():
+                        inv = InventoryCurrent.objects.get(user_id=request.user.id)
+                        if inv.chips_sale >= venta and inv.chips_portability >= porta:
+                            #actualizo el inventario del vendedor
+                            update_inventory(venta, porta, self.kwargs['pk'], True)
+                            # actualiza los datos del supervisor
+                            update_inventory(-venta, -porta, request.user.id, False)
 
-                if venta == '': chip_venta = 0
-                else: chip_venta = int(venta)
-                
-                if portabilidad == '': chip_portabilidad = 0
-                else: chip_portabilidad = int(portabilidad)
-
-                with transaction.atomic():
-                    inv = InventoryCurrent.objects.get(user_id=request.user.id)
-                    if inv.chips_sale >= chip_venta and inv.chips_portability >= chip_portabilidad:
-                        #actualizo el inventario del vendedor
-                        update_inventory(chip_venta, chip_portabilidad, self.kwargs['pk'], True)
-                        # actualiza los datos del supervisor
-                        update_inventory(-chip_venta, -chip_portabilidad, request.user.id, False)
-
-                        return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
-                   
+                            return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+                messages.error(self.request, 'No tienes suficientes chips')
                 return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
             elif action == 'del':
-                venta,portabilidad = request.POST.get('venta'),request.POST.get('portabilidad')
+                venta,porta = request.POST['venta'],request.POST['portabilidad']
+                if venta == '': venta = 0
+                else: venta = int(venta)
+                if porta == '': porta = 0
+                else: porta = int(porta)
        
-                if venta == '' and portabilidad == '':
-                    return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
-
-                if venta == '': chip_venta = 0
-                else: chip_venta = int(venta)
-                
-                if portabilidad == '': chip_portabilidad = 0
-                else: chip_portabilidad = int(portabilidad)
-                
-                with transaction.atomic():
-                    inv_ven = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
-                    if inv_ven.chips_sale >= chip_venta and inv_ven.chips_portability >= chip_portabilidad:
-                        #actualizo el inventario del vendedor
-                        update_inventory(chip_venta* -1, chip_portabilidad* -1, self.kwargs['pk'], False)
-                        #actualizo los datos del supervisor
-                        update_inventory(chip_venta, chip_portabilidad, request.user.id, True)
-                        return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
-                    
-           
+                if venta > 0 or porta > 0:
+                    with transaction.atomic():
+                        inv_ven = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
+                        if inv_ven.chips_sale >= venta and inv_ven.chips_portability >= porta:
+                            #actualizo el inventario del vendedor
+                            update_inventory(venta* -1, porta* -1, self.kwargs['pk'], False)
+                            #actualizo los datos del supervisor
+                            update_inventory(venta, porta, request.user.id, True)
+                            return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
+                messages.error(self.request, 'El vendedor no tiene suficientes chips')
                 return redirect('supervisor:informacion_vendedor', pk=self.kwargs['pk'])
-            
-            if action == 'searchdata':
+            elif action == 'searchdata':
                 data = ordenes(request,self.kwargs['pk'])
             else:
-                print('ha ocurrido un error')
+                messages.info(self.request, 'Ha ocurrido un error')
         except Exception as e:
-            print(e)
-
+            data['error'] = str(e)
         return JsonResponse(data, safe=False)
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Agregar Inventario'
         context['entity'] = 'Agregar Inventario'
+        context['object_list'] = InventoryCurrent.objects.get(user_id=self.kwargs['pk'])
         return context
 
 
@@ -193,7 +186,6 @@ class InventoryUpdateView(ValidatePermissionRequiredMixin,ListView):
     permission_required = 'inventory.change_inventory'
     model = Inventory
     template_name = 'supervisor/agregar_inventario.html'
-    #form_class = InventoryAddForm
     success_url = reverse_lazy('supervisor:agregar-inventario')
 
     @method_decorator(csrf_exempt)
@@ -214,21 +206,19 @@ class InventoryUpdateView(ValidatePermissionRequiredMixin,ListView):
         return query2
 
     def post(self, request, *args, **kwargs):
-        
+        data = {}
         try:
             action = request.POST['action']
             if action == 'add':
-                if request.POST.get('venta') == '' and request.POST.get('portabilidad') == '':
-                    return redirect(self.success_url)
-
-                if request.POST.get('venta') == '': chip_venta = 0
-                else: chip_venta = int(request.POST.get('venta'))
-
-                if request.POST.get('portabilidad') == '': chip_portabilidad = 0
-                else: chip_portabilidad = int(request.POST.get('portabilidad'))
-
-                update_inventory(chip_venta, chip_portabilidad, self.request.user.id, True)
-
+                venta,porta = request.POST['venta'],request.POST['portabilidad']
+                if venta == '': venta = 0
+                else: venta = int(venta)
+                if porta == '': porta = 0
+                else: porta = int(porta)
+                # comprobamos que los campos no sean ceros
+                if venta > 0 or porta > 0:
+                    #actualizamos el inventario
+                    update_inventory(venta, porta, self.request.user.id, True)
                 return redirect(self.success_url)
             elif action == 'searchdata':
                 data = []
@@ -236,27 +226,26 @@ class InventoryUpdateView(ValidatePermissionRequiredMixin,ListView):
                 for v in GrupSupervisor.objects.filter(supervisor_id=request.user.id):
                     # vamos agregando los reportes de cada vendedor en data[]
                     for i in Inventory.objects.filter(user_id=v.vendedor_id):
-                        data.append(i.toJSON())
-                        #data.insert(0,i.toJSON())
+                        #data.append(i.toJSON())
+                        data.insert(0,i.toJSON())
                 data.sort(key=lambda x: x['id'], reverse=True)
-                #print(data)
+                
             else:
-                print('ha ocurrido un error')
+                data['error'] = 'ha ocurrido un error'
         except Exception as e:
-            print(e)
-
+            data['error'] = str(e)
+        print(data)
         return JsonResponse(data, safe=False)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        context['title'] = 'Editar Vendedor'
-        context['entity'] = 'Editar Vendedor'
+        context['title'] = 'Mi Inventario'
+        context['entity'] = 'Inventario'
         return context
     
 
 class LiquidationsListView(ValidatePermissionRequiredMixin,ListView):
-    permission_required = 'vendedor.view_report'
+    permission_required = ['vendedor.view_report','vendedor.delete_report','vendedor.view_reportdetail']
     model = GrupSupervisor
     template_name = 'supervisor/liquidaciones.html'
 
@@ -287,13 +276,15 @@ class LiquidationsListView(ValidatePermissionRequiredMixin,ListView):
             elif action == 'aprobado_liquidations':
                 # guardamos todos los datos en vents
                 vents = json.loads(request.POST['vents'])
+                
                 ventas = 0
                 portas = 0
                 for i in vents['det']:
-                    if i['product']['category'] == 1:
+                    if i['product']['cat']['name'] == 'ventas':
                         ventas += 1 * i['quantity']
-                    else:
+                    if i['product']['cat']['name'] == 'portabilidad':
                         portas += 1 * i['quantity']
+                
                 with transaction.atomic():  # en caso de que haya un error en la insercion no guardamos nada
                     liq = Report.objects.get(id=vents['id'])
                     liq.state = 'aprobado'
@@ -305,6 +296,118 @@ class LiquidationsListView(ValidatePermissionRequiredMixin,ListView):
         except Exception as e:
                 data['error'] = str(e)
 
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Liquidaciones'
+        context['entity'] = 'Liquidaciones'
+        return context
+
+
+
+class SalesCreateView(ValidatePermissionRequiredMixin,CreateView):
+    #permission_required = 'vendedor.view_inventory'
+    # Or multiple permissions
+    #permission_required = ('catalog.can_mark_returned', 'catalog.can_edit')
+    # Note that 'catalog.can_edit' is just an example
+    # the catalog application doesn't have such permission!
+    model = Report
+    permission_required = 'supervisor.add_grupsupervisor'
+    form_class = SalesCreateForm
+    template_name = 'supervisor/liquidar-ventas.html'
+    success_url = reverse_lazy('supervisor:liquidaciones')
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'search_products':
+                data = []
+                for v in GrupSupervisor.objects.filter(supervisor_id=request.user.id):
+                    # vamos agregando los reportes de cada vendedor en data[]
+                    for i in Report.objects.filter(user_id=v.vendedor_id, state = 'aprobado'):
+                        data.insert(0,i.toJSON())  
+            elif action == 'search_details_prod':
+                data = []
+                for i in ReportDetail.objects.filter(report_id=request.POST['id']):
+                    data.append(i.toJSON())
+            elif action == 'add':  # recibimos el valor del input oculto con el valor que le enviamos en el contexto
+                # guardamos en vents los productos que nos llega del formulario
+                vents = json.loads(request.POST['vents'])
+                #print(vents['products'])
+                with transaction.atomic():  # en caso de que haya un error en la insercion no guardamos nada
+                    report = Report()
+                    report.user_id = self.request.user.id
+                    report.state = 'finalizado'
+                    report.date = vents['date']
+                    report.subtotal = float(vents['subtotal'])
+                    report.commission_paid = float(vents['commission_paid'])
+                    report.commission_receivable = float(vents['commission_receivable'])
+                    report.discount = float(vents['discount'])
+                    report.total = float(vents['total'])
+                    report.save()  # guardamos los datos del reporte
+
+                    # vamos guardando los datos de los productos del reporte
+                    for i in vents['products']:
+                        # vamos agregando el detalle del reporte
+                        for j in i['det']:
+                            det = ReportDetail()
+                            det.report_id = report.id
+                            det.product_id = j['product']['id']
+                            det.quantity = int(j['quantity'])
+                            det.price = float(j['price'])
+                            det.commission_paid = float(j['commission_paid'])
+                            det.commission_receivable = float(j['commission_receivable'])
+                            det.total = float(j['total'])
+                            det.save()
+
+                        Report.objects.filter(id=i['id']).update(state='finalizado') # actualizo el reporte a finalizado
+            else:
+                data['error'] = 'No ha ingresado a ninguna opción'
+        except Exception as e:
+            data['error'] = str(e)
+        # para que se pueda serializar se coloca safe = false
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Liquidacion de Ventas'
+        context['entity'] = 'Nueva Liquidacion'
+        context['action'] = 'add'
+        return context
+
+
+class SalesListView(ValidatePermissionRequiredMixin,ListView):
+    permission_required = 'supervisor.add_grupsupervisor'
+    model = Report
+    template_name = 'supervisor/lista-ventas.html'
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'searchdata':
+                data = []
+                for i in Report.objects.filter(user_id=self.request.user.id):
+                    data.insert(0,i.toJSON())
+                    #data.append(i.toJSON())
+            elif action == 'search_details_prod':
+                data = []
+                for i in ReportDetail.objects.filter(report_id=request.POST['id']):
+                    data.insert(0,i.toJSON())
+            else:
+                data['error'] = 'Ha ocurrido un error'
+        except Exception as e:
+            data['error'] = str(e)
         return JsonResponse(data, safe=False)
 
     def get_context_data(self, **kwargs):

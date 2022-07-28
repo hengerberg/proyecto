@@ -54,14 +54,15 @@
             </td>
             <td>{{usuario.vendedor.first_name}} {{usuario.vendedor.last_name}}</td>
             
-            <td>{% if usuario.vendedor.is_active %}
+            <td>
+              {% if usuario.vendedor.is_active %}
               <span class="badge badge-success">Activo</span>
               {% else %}
               <span class="badge badge-danger">Desactivo</span>
               {% endif %}
             </td>
             <td>
-              {% if perms.auth.view_user %}
+              {% if perms.usuario.view_seller %}
               <a class="btn btn-primary btn-sm"
                 href="{% url 'supervisor:informacion_vendedor' usuario.vendedor.id %}">
                 <i class="fas fa-folder">
@@ -69,7 +70,7 @@
                 View
               </a>
               {% endif %}
-              {% if perms.auth.change_user%}
+              {% if perms.usuario.change_seller%}
               <a class="btn btn-info btn-sm" href="{% url 'supervisor:editar_vendedor' usuario.vendedor.id %}">
                 <i class="fas fa-pencil-alt">
                 </i>

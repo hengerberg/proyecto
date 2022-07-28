@@ -65,7 +65,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     model = Profile
     form_class = ProfileForm
     template_name = 'usuario/perfil.html'
-    success_url = reverse_lazy('perfil')
+    success_url = reverse_lazy('user:perfil')
 
     def get_object(self):
         #consultamos si el perfil existe, si no existe lo crea
@@ -240,6 +240,7 @@ class ResetPasswordView(FormView):
         context['title'] = 'Reseteo de Contraseña'
         return context
 
+
 class ChangePasswordView(FormView):
     form_class = ChangePasswordForm
     template_name = 'registration/changepwd.html'
@@ -335,7 +336,6 @@ class UserCreateView(ValidatePermissionRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         data = {}
-        user = UserForm(request.POST)
         try:
             action = request.POST['action']
             if action == 'add':
@@ -343,17 +343,16 @@ class UserCreateView(ValidatePermissionRequiredMixin, CreateView):
                     form = self.get_form()
                     data = form.save()
                     # extraemos los datos del usuario creado
-                    sup = User.objects.get(username=data['username'])
+                    user = User.objects.get(username=data['username'])
                     #creamos el perfil
-                    perfil = Profile(
-                        distributor_id=request.user.user_profile.distributor_id, user_id=sup.id)
+                    perfil = Profile(distributor_id=request.user.user_profile.distributor_id, user_id=user.id)
                     perfil.save()
-                    #creamos el inventario
-                    inventory = Inventory(user_id=sup.id)
-                    inventory.save()
-                    inv = InventoryCurrent(user_id=sup.id)
-                    inv.save()
-
+                    if user.groups.filter(name__in=['supervisor', 'vendedor']): # comprobamos si el usuario tiene asignado alguno de estos grupos
+                        #creamos el inventario
+                        inventory = Inventory(user_id=user.id)
+                        inventory.save()
+                        inv = InventoryCurrent(user_id=user.id)
+                        inv.save()
             else:
                 data['error'] = 'No ha ingresado a ninguna opción'
         except Exception as e:

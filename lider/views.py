@@ -10,7 +10,7 @@ from .mixins import ValidatePermissionRequiredMixin
 from inventory.models import Inventory, InventoryCurrent
 from supervisor.forms import FormularioCrearVendedor
 from usuario.models import Profile
-from .models import Product
+from .models import Product, Category
 from .forms import FormAddProduct
 # Create your views here.
 
@@ -27,9 +27,6 @@ lider.change_product
 lider.del_product
 lider.view_product
 
---------- por corregir-------------------------
-crud user
-asignar grupos al crear usuarios
 """
 
 
@@ -151,4 +148,109 @@ class ProductsListView(ValidatePermissionRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Lista de Productos'
         context['entity'] = 'Productos'
+        return context
+
+
+class CatProductCreateView(ValidatePermissionRequiredMixin, TemplateView):
+    
+    permission_required = 'lider.add_product'
+    template_name = 'lider/inicio.html'
+    success_url = reverse_lazy('lider:lista_productos')
+
+    # sobreescribimos el metodo post de la vista generica CreateView
+    def get(self, request, *args, **kwargs):
+        dist = self.request.user.user_profile.distributor_id
+        cats = {
+                '1':'ventas',
+                '2':'portabilidad'
+            }
+        
+        prods = {
+                '1':{
+                    'category': 'portabilidad',
+                    'name': 'portabilidad',
+                    'description': 'Portabilidad',
+                    'price_in':0,
+                    'price_out':0,
+                    'seller_commission': 1.5
+                },
+                '2':{
+                    'category': 'portabilidad',
+                    'name': 'reposicion',
+                    'description': 'reposicion',
+                    'price_in':2.5,
+                    'price_out':4,
+                    'seller_commission': 1.5
+                },
+                '3':{
+                    'category': 'ventas',
+                    'name': 'chip $4',
+                    'description': 'chip $4',
+                    'price_in':2.5,
+                    'price_out':4,
+                    'seller_commission': 1.5
+                },
+                '4':{
+                    'category': 'ventas',
+                    'name': 'chip $7',
+                    'description': 'chip $7',
+                    'price_in':5.5,
+                    'price_out':7,
+                    'seller_commission': 1.5
+                },
+                '5':{
+                    'category': 'ventas',
+                    'name': 'chip $10',
+                    'description': 'Portabilidad',
+                    'price_in':8.5,
+                    'price_out':10,
+                    'seller_commission': 1.5
+                },
+                '6':{
+                    'category': 'ventas',
+                    'name': 'chip $20',
+                    'description': 'Portabilidad',
+                    'price_in':18.5,
+                    'price_out':20,
+                    'seller_commission': 1.5
+                },
+                '7':{
+                    'category': 'ventas',
+                    'name': 'chip $25',
+                    'description': 'Portabilidad',
+                    'price_in':23.5,
+                    'price_out':25,
+                    'seller_commission': 1.5
+                }
+            }
+        if Category.objects.all() != '' and kwargs['pk'] == 1:
+            try:
+                # creamos las categorias
+                for cat in cats.values():
+                    c = Category(name = cat, distributor_id = dist)
+                    c.save()
+
+                # creamos los productos
+                for proct in prods.values():
+                    c = Category.objects.get(name = proct['category'])
+                    p = Product(
+                        name = proct['name'],
+                        description = proct['description'],
+                        price_in = proct['price_in'],
+                        price_out = proct['price_out'],
+                        seller_commission = proct['seller_commission'],
+                        pay_commission = True,
+                        category_id = c.id,
+                        distributor_id = dist
+                    )
+                    p.save()
+            except Exception as e:
+                print(e)
+        return HttpResponseRedirect(self.success_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Registro de productos'
+        context['entity'] = 'Nuevo Producto'
+
         return context

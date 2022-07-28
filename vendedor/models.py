@@ -17,6 +17,10 @@ class Report(models.Model):
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
+    # pendiente = por aprobar por el supervisor
+    # cancelado = negado por el supervisores
+    # aprobado = aprobado por el supervisor
+    # finalizado = pagado por el supervisor
     state = models.CharField(max_length=20, choices=STATE, default = 'pendiente')
     subtotal = models.FloatField()
     commission_paid = models.FloatField(default=0.00)

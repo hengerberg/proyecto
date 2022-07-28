@@ -76,6 +76,8 @@ $(function () {
                         return '<span class="badge bg-success">' + data + '</span>';
                     } else if (data === 'cancelado') {
                         return '<span class="badge bg-danger">' + data + '</span>';
+                    } else if (data === 'finalizado'){
+                        return '<span class="badge bg-info">' + data + '</span>';
                     } else {
                         return '<span class="badge bg-warning">' + data + '</span>';
                     }
@@ -83,7 +85,6 @@ $(function () {
                 }
             },
         ],
-
     });
     $('#liquidaciones tbody')
         .on('click', 'a[rel="details"]', function () {
