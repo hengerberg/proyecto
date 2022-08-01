@@ -1,12 +1,12 @@
-function message_error(obj) {
-    var html = '';
-    if (typeof (obj) === 'object') {
+function message_error(obj) { // recibe un objeto, este objeto es un array
+    var html = ''; // defino la variable html para crear todo el error que vamos a mostrar
+    if (typeof (obj) === 'object') { // validamos que lo que llegue sea el objeto array
         html = '<ul style="text-align: left;">';
-        $.each(obj, function (key, value) {
-            html += '<li>' + key + ': ' + value + '</li>';
+        $.each(obj, function (key, value) { // obtengo los datos de los errores, la key error y el valor del error
+            html += '<li>' + key + ': ' + value + '</li>'; // construimos el componente ul,li para mostrar los errores
         });
         html += '</ul>';
-    } else {
+    } else { // si no es un objeto la informacion llega con tipo string
         html = '<p>' + obj + '</p>';
     }
     Swal.fire({

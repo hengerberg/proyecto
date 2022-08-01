@@ -3,6 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.forms.models import model_to_dict
+from django.urls import reverse
 
 from Appgestion.settings import MEDIA_URL
 
@@ -21,6 +22,27 @@ class User(AbstractUser):
         # con una lista de comprension voy iterando los grupos asociados al usuario
         item['groups'] = [{'id':g.id, 'name':g.name} for g in self.groups.all()] 
         return item
+    
+    def get_distributor_id(self):
+        """
+        metodo que retorna el id de la distribuidora a la que pertenece
+        """
+        d = Distribuidora.objects.get(distributor__user=self.id)
+        return d.id
+
+    def get_distributor(self):
+        """
+        metodo que retorna el nombre de la distribuidora a la que pertenece
+        """
+        d = Distribuidora.objects.get(distributor__user=self.id)
+        return d
+
+    def get_absolute_url(self):
+        """Returns the URL to access a particular instance of the model."""
+        return reverse('informacion_vendedor', args=[str(self.id)])
+
+    def __str__(self):
+        return self.get_full_name()
 
     class Meta:
         permissions = (
@@ -55,7 +77,7 @@ class Profile(models.Model):
         ('f', 'Feminino'),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_profile')
-    distributor = models.ForeignKey(Distribuidora,on_delete=models.CASCADE)
+    distributor = models.ForeignKey(Distribuidora,on_delete=models.CASCADE, related_name='distributor')
     genre = models.CharField(max_length=1, choices=GENRE_CHOICES,blank = True, null=True, verbose_name="Genero")
     avatar = models.ImageField(upload_to='profiles',blank = True, null=True, verbose_name='Imagen de Perfil')
     phone_regex = RegexValidator(

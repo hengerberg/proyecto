@@ -225,7 +225,6 @@ class ResetPasswordView(FormView):
         try:
             form = ResetPasswordForm(request.POST)  # self.get_form()
             if form.is_valid():
-                
                 user = form.get_user() # obtenemos el usuario actual
                 data = self.send_email_reset_pwd(user) # enviamos el correo 
             else:
@@ -285,8 +284,7 @@ class UserListView(ValidatePermissionRequiredMixin, ListView):
     """
     vista que muestra todos los usuarios registrados en una distribuidora
     """
-    permission_required = ('usuario.view_user',
-                           'usuario.view_seller', 'usuario.view_supervisor')
+    permission_required = ('usuario.view_user','usuario.view_seller', 'usuario.view_supervisor')
     model = User
     template_name = 'usuario/lista_usuarios.html'
 

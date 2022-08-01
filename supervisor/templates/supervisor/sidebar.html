@@ -37,10 +37,10 @@
 </li>
 {% endif %}
 
-{% if perms.usuario.view_seller %}
+{% if perms.usuario.view_seller and perms.usuario.add_seller%}
 <li class="nav-item">
     <a href="{% url 'supervisor:lista_vendedores' %}" class="nav-link">
-        <i class="nav-icon fas fa-user"></i>
+        <i class="nav-icon fas fa-users"></i>
         <p>Lista de Vendedores</p>
     </a>
 </li>

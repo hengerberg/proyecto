@@ -1,0 +1,25 @@
+{% if perms.islas.add_isla %}
+<li class="nav-item">
+    <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-store"></i>
+        <p>Islas<i class="fas fa-angle-left right"></i></p>
+    </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <a href="{% url 'isla:crear_isla' %}" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Nueva Isla</p>
+            </a>
+        </li>
+        {% if perms.lider.add_product %}
+        <li class="nav-item">
+            <a href="{% url 'isla:lista_islas' %}" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Lista de Islas</p>
+            </a>
+        </li>
+        
+        {% endif %}
+    </ul>
+</li>
+{% endif %}

@@ -71,7 +71,7 @@ class SupervisorCreateView(ValidatePermissionRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Registro de supervisor'
         context['titleForm'] = 'Supervisor'
-        context['entity'] = 'Nuevo Spervisor'
+        context['entity'] = 'Nuevo Supervisor'
         return context
 
 
@@ -91,10 +91,11 @@ class ProductCreateView(ValidatePermissionRequiredMixin, CreateView):
 
         if form.is_valid():
             product = form.save(commit=False)
+            
             product.distributor_id = request.user.user_profile.distributor_id
             product.save()
 
-            return HttpResponseRedirect(self.success_url)
+            #return HttpResponseRedirect(self.success_url)
         # como no retorna nada colcamos self.object = None
         self.object = None
         # agregamos de nuevo el formulario con los errores devueltos
@@ -131,8 +132,11 @@ class ProductUpdateView(ValidatePermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Editar Producto'
-        context['entity'] = 'Editar Producto'
+        context['title'] = 'Actualizar una Isla'
+        context['titleForm'] = 'Actualizar Isla'
+        context['entity'] = 'Islas'
+        context['list_url'] = self.success_url
+        context['action'] = 'edit'
         return context
 
 

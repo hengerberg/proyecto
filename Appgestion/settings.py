@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'supervisor',
     'vendedor',
     'lider',
-    'inventory'
+    'inventory',
+    'islas'
 ]
 
 MIDDLEWARE = [

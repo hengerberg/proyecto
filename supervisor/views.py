@@ -77,14 +77,14 @@ class SellerCreateView(ValidatePermissionRequiredMixin,CreateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Registro de vendedores'
         context['entity'] = 'Nuevo Vendedor'
-        context['titleForm'] = 'Nuevo Usuario'
+        context['titleForm'] = 'Nuevo Vendedor'
         context['list_url'] = self.success_url
         context['action'] = 'add'
         return context
 
 
 class SellerListView(ValidatePermissionRequiredMixin,ListView):
-    permission_required = 'usuario.view_seller'
+    permission_required = ('usuario.view_seller','usuario.add_seller')
     model = GrupSupervisor
     template_name = 'supervisor/vendedor/listar_vendedores.html'
 
@@ -228,13 +228,12 @@ class InventoryUpdateView(ValidatePermissionRequiredMixin,ListView):
                     for i in Inventory.objects.filter(user_id=v.vendedor_id):
                         #data.append(i.toJSON())
                         data.insert(0,i.toJSON())
-                data.sort(key=lambda x: x['id'], reverse=True)
-                
+                data.sort(key=lambda x: x['id'], reverse=True) # ordenamos el json de la datatable
             else:
                 data['error'] = 'ha ocurrido un error'
         except Exception as e:
             data['error'] = str(e)
-        print(data)
+        #print(data)
         return JsonResponse(data, safe=False)
 
     def get_context_data(self, **kwargs):
@@ -264,7 +263,6 @@ class LiquidationsListView(ValidatePermissionRequiredMixin,ListView):
                     # vamos agregando los reportes de cada vendedor en data[]
                     for i in Report.objects.filter(user_id=v.vendedor_id):
                         data.insert(0,i.toJSON())
-                
             elif action == 'search_details_prod':
                 data = []
                 for i in ReportDetail.objects.filter(report_id=request.POST['id']):
@@ -276,7 +274,6 @@ class LiquidationsListView(ValidatePermissionRequiredMixin,ListView):
             elif action == 'aprobado_liquidations':
                 # guardamos todos los datos en vents
                 vents = json.loads(request.POST['vents'])
-                
                 ventas = 0
                 portas = 0
                 for i in vents['det']:
@@ -284,18 +281,15 @@ class LiquidationsListView(ValidatePermissionRequiredMixin,ListView):
                         ventas += 1 * i['quantity']
                     if i['product']['cat']['name'] == 'portabilidad':
                         portas += 1 * i['quantity']
-                
                 with transaction.atomic():  # en caso de que haya un error en la insercion no guardamos nada
                     liq = Report.objects.get(id=vents['id'])
                     liq.state = 'aprobado'
                     liq.save()
                     update_inventory(ventas*-1,portas*-1,vents['user_id'], False)
-                    
             else:
                 data['error'] = 'Ha ocurrido un error'
         except Exception as e:
                 data['error'] = str(e)
-
         return JsonResponse(data, safe=False)
 
     def get_context_data(self, **kwargs):

@@ -198,7 +198,7 @@ class MySalesListView(ValidatePermissionRequiredMixin,ListView):
         return context
 
 
-class InventoryListView(ListView):
+class InventoryListView(ValidatePermissionRequiredMixin,ListView):
     permission_required = 'inventory.view_inventory'
     model = Inventory
     template_name = 'vendedor/inventario.html'
